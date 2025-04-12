@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  reservation-db:
+    build:
+      context: .
+      dockerfile: Dockerfile.db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: reservation_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - reservation_data:/var/lib/postgresql/data
+    networks:
+      - microservices_default
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d reservation_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  reservation-service:
+    build: .
+    ports:
+      - "5002:5000"
+    environment:
+      DATABASE_URL: "postgresql://admin:admin123@reservation-db/reservation_db"
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+      USER_SERVICE_URL: "http://user-service:5000"
+      SALLE_SERVICE_URL: "http://salle-service:5000"
+    depends_on:
+      reservation-db:
+        condition: service_healthy
+    networks:
+      - microservices_default
+    command: >
+      bash -c "while ! nc -z reservation-db 5432; do sleep 2; done
+      && while ! nc -z kafka 9092; do sleep 2; done
+      && gunicorn --bind 0.0.0.0:5000 wsgi:app"
+
+networks:
+  microservices_default:
+    external: true
+    name: microservices_default
+
+volumes:
+  reservation_data:

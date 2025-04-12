@@ -1,0 +1,135 @@
+<!-- templates/dashboard.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="welcome-section">
+        <h2>Welcome, {{ user.name }}!</h2>
+        <p class="user-email">Email: {{ user.email }}</p>
+    </div>
+
+    <div class="section">
+        <h3>Users</h3>
+        <!-- Formulaire d'ajout d'utilisateur -->
+        <div class="add-form">
+            <form action="{{ url_for('add_user') }}" method="POST" class="add-form">
+                <input type="text" name="email" placeholder="User email" required>
+                <input type="text" name="username" placeholder="Username" required>
+                <button type="submit" class="btn btn-add">Ajouter</button>
+            </form>
+        </div>
+
+        {% if users.error %}
+            <p class="error">{{ users.error }}</p>
+        {% else %}
+            {% for user in users.users %}
+                <div class="card user-card">
+                    <div class="user-info">
+                        <strong>ID:</strong> {{ user.id }} | 
+                        <strong>Email:</strong> {{ user.email }} | 
+                        <strong>Username:</strong> {{ user.username }}
+                    </div>
+                    <div class="user-actions">
+                        <!-- Formulaire de mise à jour -->
+                        <form action="{{ url_for('update_user', user_id=user.id) }}" method="POST" class="update-form">
+                            <input type="text" name="email" placeholder="New email" required>
+                            <input type="text" name="username" placeholder="New username" required>
+                            <button type="submit" class="btn btn-update">Modifier</button>
+                        </form>
+                        <!-- Formulaire de suppression -->
+                        <form action="{{ url_for('delete_user', user_id=user.id) }}" method="POST" class="delete-form" onsubmit="return confirm('Supprimer cet utilisateur ?');">
+                            <button type="submit" class="btn btn-delete">Supprimer</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <h3>Salles</h3>
+        <!-- Formulaire d'ajout de salle -->
+        <div class="add-form">
+            <form action="{{ url_for('add_salle') }}" method="POST" class="add-form">
+                <input type="text" name="nom" placeholder="Salle name" required>
+                <input type="number" name="capacite" placeholder="Capacity" required>
+                <input type="text" name="equipements" placeholder="Equipements">
+                <button type="submit" class="btn btn-add">Ajouter</button>
+            </form>
+        </div>
+
+        {% if salles.error %}
+            <p class="error">{{ salles.error }}</p>
+        {% else %}
+            <ul class="salles-list">
+            {% for salle in salles %}
+                <li class="salle-item">
+                    <div class="salle-info">
+                        <strong>ID:</strong> {{ salle.id }} | 
+                        <strong>Name:</strong> {{ salle.nom }} | 
+                        <strong>Capacite:</strong> {{ salle.capacite }} | 
+                        <strong>Equipements:</strong> {{ salle.equipements }} | 
+                        <strong>Créé le:</strong> {{ salle.created_at }}
+                    </div>
+                    <div class="salle-actions">
+                        <!-- Formulaire de mise à jour -->
+                        <form action="{{ url_for('update_salle', salle_id=salle.id) }}" method="POST" class="update-form">
+                            <input type="text" name="nom" placeholder="New name" required>
+                            <input type="number" name="capacite" placeholder="New capacity" required>
+                            <input type="text" name="equipements" placeholder="New equipements" required>
+                            <button type="submit" class="btn btn-update">Modifier</button>
+                        </form>
+                        <!-- Formulaire de suppression -->
+                        <form action="{{ url_for('delete_salle', salle_id=salle.id) }}" method="POST" class="delete-form" onsubmit="return confirm('Supprimer cette salle ?');">
+                            <button type="submit" class="btn btn-delete">Supprimer</button>
+                        </form>
+                    </div>
+                </li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <h3>Reservations</h3>
+        <!-- Formulaire d'ajout de réservation -->
+        <div class="add-form">
+            <form action="{{ url_for('add_reservation') }}" method="POST" class="add-form">
+                <input type="number" name="user_id" placeholder="User ID" required>
+                <input type="number" name="salle_id" placeholder="Salle ID" required>
+                <input type="datetime-local" name="start_time" placeholder="Start time" required>
+                <input type="datetime-local" name="end_time" placeholder="End time" required>
+                <button type="submit" class="btn btn-add">Ajouter</button>
+            </form>
+        </div>
+
+        {% if reservations.error %}
+            <p class="error">{{ reservations.error }}</p>
+        {% else %}
+            <ul class="reservations-list">
+            {% for reservation in reservations.reservations %}
+                <li class="reservation-item">
+                    <div class="reservation-info">
+                        <strong>ID:</strong> {{ reservation.id }} | 
+                        <strong>Start:</strong> {{ reservation.start_time }} | 
+                        <strong>End:</strong> {{ reservation.end_time }}
+                    </div>
+                    <div class="reservation-actions">
+                        <!-- Formulaire de mise à jour -->
+                        <form action="{{ url_for('update_reservation', reservation_id=reservation.id) }}" method="POST" class="update-form">
+                            <input type="datetime-local" name="start_time" placeholder="New start time" required>
+                            <input type="datetime-local" name="end_time" placeholder="New end time" required>
+                            <button type="submit" class="btn btn-update">Modifier</button>
+                        </form>
+                        <!-- Formulaire de suppression -->
+                        <form action="{{ url_for('delete_reservation', reservation_id=reservation.id) }}" method="POST" class="delete-form" onsubmit="return confirm('Supprimer cette réservation ?');">
+                            <button type="submit" class="btn btn-delete">Supprimer</button>
+                        </form>
+                    </div>
+                </li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
