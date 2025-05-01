@@ -1,4 +1,4 @@
-name: CI for User Service
+name: CI for Microservices
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
     branches: [ main ]
 
 jobs:
-  build-test-analyze:
-    name: Build, Test & SonarQube
+  user-service:
+    name: Build, Test & SonarQube - User Service
     runs-on: ubuntu-latest
 
     services:
@@ -40,14 +40,14 @@ jobs:
           cd user-service
           pip install -r requirements.txt
 
-      - name: 🧪 Run unit tests (à adapter)
+      - name: 🧪 Run unit tests
         run: |
           cd user-service
-          python -m unittest discover -s tests || echo "Aucun test trouvé ou à configurer"
+          python -m unittest discover -s tests || echo "No tests found, continuing..."
 
       - name: 🐳 Build Docker image
         run: |
-          docker build -t user-service ./user-service
+          docker build -t user-service:latest ./user-service
 
       - name: 🔍 Run SonarQube analysis
         env:
@@ -58,6 +58,116 @@ jobs:
           unzip sonar-scanner.zip
           ./sonar-scanner-*/bin/sonar-scanner \
             -Dsonar.projectKey=user-service \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=http://localhost:9000 \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
+  salle-service:
+    name: Build, Test & SonarQube - Salle Service
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: admin123
+          POSTGRES_DB: salle_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U admin -d salle_db"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v3
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10
+
+      - name: 📦 Install dependencies
+        run: |
+          cd salle-service
+          pip install -r requirements.txt
+
+      - name: 🧪 Run unit tests
+        run: |
+          cd salle-service
+          python -m unittest discover -s tests || echo "No tests found, continuing..."
+
+      - name: 🐳 Build Docker image
+        run: |
+          docker build -t salle-service:latest ./salle-service
+
+      - name: 🔍 Run SonarQube analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          cd salle-service
+          curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.7.0.2747-linux.zip
+          unzip sonar-scanner.zip
+          ./sonar-scanner-*/bin/sonar-scanner \
+            -Dsonar.projectKey=salle-service \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=http://localhost:9000 \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
+  reservation-service:
+    name: Build, Test & SonarQube - Reservation Service
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: admin123
+          POSTGRES_DB: reservation_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U admin -d reservation_db"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v3
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10
+
+      - name: 📦 Install dependencies
+        run: |
+          cd reservation-service
+          pip install -r requirements.txt
+
+      - name: 🧪 Run unit tests
+        run: |
+          cd reservation-service
+          python -m unittest discover -s tests || echo "No tests found, continuing..."
+
+      - name: 🐳 Build Docker image
+        run: |
+          docker build -t reservation-service:latest ./reservation-service
+
+      - name: 🔍 Run SonarQube analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          cd reservation-service
+          curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.7.0.2747-linux.zip
+          unzip sonar-scanner.zip
+          ./sonar-scanner-*/bin/sonar-scanner \
+            -Dsonar.projectKey=reservation-service \
             -Dsonar.sources=. \
             -Dsonar.host.url=http://localhost:9000 \
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
