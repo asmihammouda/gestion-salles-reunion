@@ -1,0 +1,82 @@
+<!-- templates/user_dashboard.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="welcome-section">
+        <h2>Welcome, {{ user.name }}!</h2>
+        <p class="user-email">Email: {{ user.email }}</p>
+    </div>
+
+    <div class="section">
+        <h3>Your Reservations</h3>
+        {% if reservations %}
+            <ul class="reservations-list">
+            {% for reservation in reservations %}
+                <li class="reservation-item">
+                    <div class="reservation-info">
+                        <strong>ID:</strong> {{ reservation.id }} | 
+                        <strong>Start:</strong> {{ reservation.start_time }} | 
+                        <strong>End:</strong> {{ reservation.end_time }} | 
+                        <strong>Salle ID:</strong> {{ reservation.salle_id }} | 
+                        <strong>Status:</strong> {{ reservation.status }}
+                    </div>
+                    <div class="reservation-actions">
+                        <!-- Formulaire de mise à jour -->
+                        <form action="{{ url_for('update_reservation', reservation_id=reservation.id) }}" method="POST" class="update-form">
+                            <input type="datetime-local" name="start_time" placeholder="New start time" required>
+                            <input type="datetime-local" name="end_time" placeholder="New end time" required>
+                            <button type="submit" class="btn btn-update">Modifier</button>
+                        </form>
+                        <!-- Formulaire de suppression -->
+                        <form action="{{ url_for('delete_reservation', reservation_id=reservation.id) }}" method="POST" class="delete-form" onsubmit="return confirm('Supprimer cette réservation ?');">
+                            <button type="submit" class="btn btn-delete">Supprimer</button>
+                        </form>
+                    </div>
+                </li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>No reservations found.</p>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <h3>Available Rooms</h3>
+        {% if salles %}
+            <ul class="salles-list">
+            {% for salle in salles %}
+                <li class="salle-item">
+                    <div class="salle-info">
+                        <strong>ID:</strong> {{ salle.id }} | 
+                        <strong>Name:</strong> {{ salle.nom }} | 
+                        <strong>Capacity:</strong> {{ salle.capacite }} | 
+                        <strong>Equipments:</strong> {{ salle.equipements }} | 
+                        <strong>Created At:</strong> {{ salle.created_at }}
+                    </div>
+                </li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>No rooms available.</p>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <h3>Make a Reservation</h3>
+        {% if user_id %}
+            <div class="add-form">
+                <form action="{{ url_for('add_reservation') }}" method="POST" class="add-form">
+                    <input type="hidden" name="user_id" value="{{ user_id }}">
+                    <input type="number" name="salle_id" placeholder="Salle ID" required>
+                    <input type="datetime-local" name="start_time" placeholder="Start time" required>
+                    <input type="datetime-local" name="end_time" placeholder="End time" required>
+                    <button type="submit" class="btn btn-add">Add Reservation</button>
+                </form>
+            </div>
+        {% else %}
+            <p class="error">Unable to make a reservation. Your account could not be registered in the system. Please contact an admin.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
