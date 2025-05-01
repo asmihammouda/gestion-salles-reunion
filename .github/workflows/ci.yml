@@ -54,17 +54,19 @@ jobs:
           docker build -t user-service:latest ./microservices/user-service
 
       - name: 🔍 Run SonarCloud analysis
-        uses: SonarSource/sonarcloud-github-action@master
         env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN2 }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN2 }}  # Use the new token
-        with:
-          projectBaseDir: microservices/user-service
-          args: >
-            -Dsonar.projectKey=user-service
-            -Dsonar.sources=app
-            -Dsonar.organization=asmihammouda  # Replace with your SonarCloud organization key if different
-            -Dsonar.host.url=https://sonarcloud.io
+        run: |
+          cd microservices/user-service
+          curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+          unzip -q sonar-scanner.zip
+          ./sonar-scanner-5.0.1.3006-linux/bin/sonar-scanner \
+            -Dsonar.projectKey=user-service \
+            -Dsonar.sources=app \
+            -Dsonar.organization=asmihammouda \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.token=$SONAR_TOKEN
 
   salle-service:
     name: Build, Test & SonarCloud - Salle Service
@@ -113,17 +115,19 @@ jobs:
           docker build -t salle-service:latest ./microservices/salle-service
 
       - name: 🔍 Run SonarCloud analysis
-        uses: SonarSource/sonarcloud-github-action@master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN2 }}
-        with:
-          projectBaseDir: microservices/salle-service
-          args: >
-            -Dsonar.projectKey=salle-service
-            -Dsonar.sources=app
-            -Dsonar.organization=asmihammouda
-            -Dsonar.host.url=https://sonarcloud.io
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd microservices/salle-service
+          curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+          unzip -q sonar-scanner.zip
+          ./sonar-scanner-5.0.1.3006-linux/bin/sonar-scanner \
+            -Dsonar.projectKey=salle-service \
+            -Dsonar.sources=app \
+            -Dsonar.organization=asmihammouda \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.token=$SONAR_TOKEN
 
   reservation-service:
     name: Build, Test & SonarCloud - Reservation Service
@@ -172,14 +176,16 @@ jobs:
           docker build -t reservation-service:latest ./microservices/reservation-service
 
       - name: 🔍 Run SonarCloud analysis
-        uses: SonarSource/sonarcloud-github-action@master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN2 }}
-        with:
-          projectBaseDir: microservices/reservation-service
-          args: >
-            -Dsonar.projectKey=reservation-service
-            -Dsonar.sources=app
-            -Dsonar.organization=asmihammouda
-            -Dsonar.host.url=https://sonarcloud.io
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd microservices/reservation-service
+          curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+          unzip -q sonar-scanner.zip
+          ./sonar-scanner-5.0.1.3006-linux/bin/sonar-scanner \
+            -Dsonar.projectKey=reservation-service \
+            -Dsonar.sources=app \
+            -Dsonar.organization=asmihammouda \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.token=$SONAR_TOKEN
