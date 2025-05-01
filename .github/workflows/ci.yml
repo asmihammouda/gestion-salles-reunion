@@ -8,7 +8,7 @@ on:
 
 jobs:
   user-service:
-    name: Build, Test & SonarQube - User Service
+    name: Build, Test & SonarCloud - User Service
     runs-on: ubuntu-latest
 
     services:
@@ -25,27 +25,12 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-          --network-alias postgres
-
-      sonarqube:
-        image: sonarqube:community
-        ports:
-          - 9000:9000
-        env:
-          SONARQUBE_ADMIN_PASSWORD: admin
-          SONAR_FORCEAUTHENTICATION: "false"
-          SONAR_JAVA_OPTS: "-Xmx512m -Xms512m"  # Limit memory usage
-        options: >-
-          --health-cmd "curl --fail http://localhost:9000/api/system/status || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-          --network-alias sonarqube
-          --memory 1g  # Limit container memory to 1 GB
 
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Required for SonarCloud to analyze history
 
       - name: 🐍 Set up Python
         uses: actions/setup-python@v4
@@ -68,37 +53,21 @@ jobs:
         run: |
           docker build -t user-service:latest ./microservices/user-service
 
-      - name: 🔍 Run SonarQube analysis
-        run: |
-          cd microservices/user-service
-          curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.7.0.2747-linux.zip
-          unzip sonar-scanner.zip
-          echo "Waiting for SonarQube to be ready..."
-          sleep 120
-          echo "Checking SonarQube availability..."
-          for i in {1..10}; do
-            if curl --fail http://localhost:9000/api/system/status; then
-              echo "SonarQube is up!"
-              break
-            else
-              echo "SonarQube not ready yet, retrying ($i/10)..."
-              sleep 10
-            fi
-            if [ $i -eq 10 ]; then
-              echo "SonarQube failed to start after retries. Checking container status..."
-              docker ps
-              docker logs sonarqube || echo "Unable to get logs for sonarqube container"
-              exit 1
-            fi
-          done
-          ./sonar-scanner-*/bin/sonar-scanner \
-            -X \
-            -Dsonar.projectKey=user-service \
-            -Dsonar.sources=app \
-            -Dsonar.host.url=http://localhost:9000
+      - name: 🔍 Run SonarCloud analysis
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN2 }}  # Use the new token
+        with:
+          projectBaseDir: microservices/user-service
+          args: >
+            -Dsonar.projectKey=user-service
+            -Dsonar.sources=app
+            -Dsonar.organization=asmihammouda  # Replace with your SonarCloud organization key if different
+            -Dsonar.host.url=https://sonarcloud.io
 
   salle-service:
-    name: Build, Test & SonarQube - Salle Service
+    name: Build, Test & SonarCloud - Salle Service
     runs-on: ubuntu-latest
 
     services:
@@ -115,27 +84,12 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-          --network-alias postgres
-
-      sonarqube:
-        image: sonarqube:community
-        ports:
-          - 9000:9000
-        env:
-          SONARQUBE_ADMIN_PASSWORD: admin
-          SONAR_FORCEAUTHENTICATION: "false"
-          SONAR_JAVA_OPTS: "-Xmx512m -Xms512m"
-        options: >-
-          --health-cmd "curl --fail http://localhost:9000/api/system/status || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-          --network-alias sonarqube
-          --memory 1g
 
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: 🐍 Set up Python
         uses: actions/setup-python@v4
@@ -158,37 +112,21 @@ jobs:
         run: |
           docker build -t salle-service:latest ./microservices/salle-service
 
-      - name: 🔍 Run SonarQube analysis
-        run: |
-          cd microservices/salle-service
-          curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.7.0.2747-linux.zip
-          unzip sonar-scanner.zip
-          echo "Waiting for SonarQube to be ready..."
-          sleep 120
-          echo "Checking SonarQube availability..."
-          for i in {1..10}; do
-            if curl --fail http://localhost:9000/api/system/status; then
-              echo "SonarQube is up!"
-              break
-            else
-              echo "SonarQube not ready yet, retrying ($i/10)..."
-              sleep 10
-            fi
-            if [ $i -eq 10 ]; then
-              echo "SonarQube failed to start after retries. Checking container status..."
-              docker ps
-              docker logs sonarqube || echo "Unable to get logs for sonarqube container"
-              exit 1
-            fi
-          done
-          ./sonar-scanner-*/bin/sonar-scanner \
-            -X \
-            -Dsonar.projectKey=salle-service \
-            -Dsonar.sources=app \
-            -Dsonar.host.url=http://localhost:9000
+      - name: 🔍 Run SonarCloud analysis
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN2 }}
+        with:
+          projectBaseDir: microservices/salle-service
+          args: >
+            -Dsonar.projectKey=salle-service
+            -Dsonar.sources=app
+            -Dsonar.organization=asmihammouda
+            -Dsonar.host.url=https://sonarcloud.io
 
   reservation-service:
-    name: Build, Test & SonarQube - Reservation Service
+    name: Build, Test & SonarCloud - Reservation Service
     runs-on: ubuntu-latest
 
     services:
@@ -205,27 +143,12 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-          --network-alias postgres
-
-      sonarqube:
-        image: sonarqube:community
-        ports:
-          - 9000:9000
-        env:
-          SONARQUBE_ADMIN_PASSWORD: admin
-          SONAR_FORCEAUTHENTICATION: "false"
-          SONAR_JAVA_OPTS: "-Xmx512m -Xms512m"
-        options: >-
-          --health-cmd "curl --fail http://localhost:9000/api/system/status || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-          --network-alias sonarqube
-          --memory 1g
 
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: 🐍 Set up Python
         uses: actions/setup-python@v4
@@ -248,31 +171,15 @@ jobs:
         run: |
           docker build -t reservation-service:latest ./microservices/reservation-service
 
-      - name: 🔍 Run SonarQube analysis
-        run: |
-          cd microservices/reservation-service
-          curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.7.0.2747-linux.zip
-          unzip sonar-scanner.zip
-          echo "Waiting for SonarQube to be ready..."
-          sleep 120
-          echo "Checking SonarQube availability..."
-          for i in {1..10}; do
-            if curl --fail http://localhost:9000/api/system/status; then
-              echo "SonarQube is up!"
-              break
-            else
-              echo "SonarQube not ready yet, retrying ($i/10)..."
-              sleep 10
-            fi
-            if [ $i -eq 10 ]; then
-              echo "SonarQube failed to start after retries. Checking container status..."
-              docker ps
-              docker logs sonarqube || echo "Unable to get logs for sonarqube container"
-              exit 1
-            fi
-          done
-          ./sonar-scanner-*/bin/sonar-scanner \
-            -X \
-            -Dsonar.projectKey=reservation-service \
-            -Dsonar.sources=app \
-            -Dsonar.host.url=http://localhost:9000
+      - name: 🔍 Run SonarCloud analysis
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN2 }}
+        with:
+          projectBaseDir: microservices/reservation-service
+          args: >
+            -Dsonar.projectKey=reservation-service
+            -Dsonar.sources=app
+            -Dsonar.organization=asmihammouda
+            -Dsonar.host.url=https://sonarcloud.io
