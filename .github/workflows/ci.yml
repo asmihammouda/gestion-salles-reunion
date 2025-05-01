@@ -69,6 +69,7 @@ jobs:
           curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.7.0.2747-linux.zip
           unzip sonar-scanner.zip
           ./sonar-scanner-*/bin/sonar-scanner \
+            -X \
             -Dsonar.projectKey=user-service \
             -Dsonar.sources=. \
             -Dsonar.host.url=http://sonarqube:9000 \
@@ -136,6 +137,7 @@ jobs:
           curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.7.0.2747-linux.zip
           unzip sonar-scanner.zip
           ./sonar-scanner-*/bin/sonar-scanner \
+            -X \
             -Dsonar.projectKey=salle-service \
             -Dsonar.sources=. \
             -Dsonar.host.url=http://sonarqube:9000 \
@@ -203,6 +205,7 @@ jobs:
           curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.7.0.2747-linux.zip
           unzip sonar-scanner.zip
           ./sonar-scanner-*/bin/sonar-scanner \
+            -X \
             -Dsonar.projectKey=reservation-service \
             -Dsonar.sources=. \
             -Dsonar.host.url=http://sonarqube:9000 \
