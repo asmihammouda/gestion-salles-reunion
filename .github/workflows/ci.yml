@@ -30,11 +30,14 @@ jobs:
         image: sonarqube:community
         ports:
           - 9000:9000
+        env:
+          SONARQUBE_ADMIN_PASSWORD: admin
+          SONAR_FORCEAUTHENTICATION: "false"
         options: >-
           --health-cmd "curl --fail http://localhost:9000/api/system/status || exit 1"
           --health-interval 10s
           --health-timeout 5s
-          --health-retries 5
+          --health-retries 10
 
     steps:
       - name: 📥 Checkout code
@@ -62,18 +65,27 @@ jobs:
           docker build -t user-service:latest ./microservices/user-service
 
       - name: 🔍 Run SonarQube analysis
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           cd microservices/user-service
           curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.7.0.2747-linux.zip
           unzip sonar-scanner.zip
+          echo "Waiting for SonarQube to be ready..."
+          sleep 120
+          echo "Checking SonarQube availability..."
+          for i in {1..10}; do
+            if curl --fail http://sonarqube:9000/api/system/status; then
+              echo "SonarQube is up!"
+              break
+            else
+              echo "SonarQube not ready yet, retrying ($i/10)..."
+              sleep 10
+            fi
+          done
           ./sonar-scanner-*/bin/sonar-scanner \
             -X \
             -Dsonar.projectKey=user-service \
-            -Dsonar.sources=. \
-            -Dsonar.host.url=http://sonarqube:9000 \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.sources=app \
+            -Dsonar.host.url=http://sonarqube:9000
 
   salle-service:
     name: Build, Test & SonarQube - Salle Service
@@ -98,11 +110,14 @@ jobs:
         image: sonarqube:community
         ports:
           - 9000:9000
+        env:
+          SONARQUBE_ADMIN_PASSWORD: admin
+          SONAR_FORCEAUTHENTICATION: "false"
         options: >-
           --health-cmd "curl --fail http://localhost:9000/api/system/status || exit 1"
           --health-interval 10s
           --health-timeout 5s
-          --health-retries 5
+          --health-retries 10
 
     steps:
       - name: 📥 Checkout code
@@ -130,18 +145,27 @@ jobs:
           docker build -t salle-service:latest ./microservices/salle-service
 
       - name: 🔍 Run SonarQube analysis
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           cd microservices/salle-service
           curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.7.0.2747-linux.zip
           unzip sonar-scanner.zip
+          echo "Waiting for SonarQube to be ready..."
+          sleep 120
+          echo "Checking SonarQube availability..."
+          for i in {1..10}; do
+            if curl --fail http://sonarqube:9000/api/system/status; then
+              echo "SonarQube is up!"
+              break
+            else
+              echo "SonarQube not ready yet, retrying ($i/10)..."
+              sleep 10
+            fi
+          done
           ./sonar-scanner-*/bin/sonar-scanner \
             -X \
             -Dsonar.projectKey=salle-service \
-            -Dsonar.sources=. \
-            -Dsonar.host.url=http://sonarqube:9000 \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.sources=app \
+            -Dsonar.host.url=http://sonarqube:9000
 
   reservation-service:
     name: Build, Test & SonarQube - Reservation Service
@@ -166,11 +190,14 @@ jobs:
         image: sonarqube:community
         ports:
           - 9000:9000
+        env:
+          SONARQUBE_ADMIN_PASSWORD: admin
+          SONAR_FORCEAUTHENTICATION: "false"
         options: >-
           --health-cmd "curl --fail http://localhost:9000/api/system/status || exit 1"
           --health-interval 10s
           --health-timeout 5s
-          --health-retries 5
+          --health-retries 10
 
     steps:
       - name: 📥 Checkout code
@@ -198,15 +225,24 @@ jobs:
           docker build -t reservation-service:latest ./microservices/reservation-service
 
       - name: 🔍 Run SonarQube analysis
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           cd microservices/reservation-service
           curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.7.0.2747-linux.zip
           unzip sonar-scanner.zip
+          echo "Waiting for SonarQube to be ready..."
+          sleep 120
+          echo "Checking SonarQube availability..."
+          for i in {1..10}; do
+            if curl --fail http://sonarqube:9000/api/system/status; then
+              echo "SonarQube is up!"
+              break
+            else
+              echo "SonarQube not ready yet, retrying ($i/10)..."
+              sleep 10
+            fi
+          done
           ./sonar-scanner-*/bin/sonar-scanner \
             -X \
             -Dsonar.projectKey=reservation-service \
-            -Dsonar.sources=. \
-            -Dsonar.host.url=http://sonarqube:9000 \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.sources=app \
+            -Dsonar.host.url=http://sonarqube:9000
